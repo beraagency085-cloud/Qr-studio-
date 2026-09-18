@@ -1,0 +1,6 @@
+{
+  "name": "QR Studio - Professional QR Code Generator",
+  "description": "Production-ready, privacy-first QR code generator with custom logos, gradients, shapes, frames, and 3D effects.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
