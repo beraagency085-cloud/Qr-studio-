@@ -8,11 +8,17 @@ import { BatchModal } from './components/BatchModal';
 import { ShortcutsModal } from './components/ShortcutsModal';
 import { TemplateGallery } from './components/TemplateGallery';
 import { ScanabilityGuide } from './components/ScanabilityGuide';
+import { LandingSections } from './components/LandingSections';
+import { Footer } from './components/Footer';
+import { ScanTestModal } from './components/ScanTestModal';
+import { GuidesModal } from './components/GuidesModal';
+import { InfoModals, InfoModalType } from './components/InfoModals';
 import { ToastContainer, ToastMessage } from './components/Toast';
 import { QRConfig, HistoryItem, ContentType } from './types';
 import { DEFAULT_QR_CONFIG, PRESET_TEMPLATES, QUICK_LOGOS } from './utils/presets';
 import { generateQrPayload, getContentSummary } from './utils/qrPayload';
 import { downloadQRCode, copyQRCodeToClipboard } from './utils/qrExporter';
+import { generateRandomSurpriseStyle } from './utils/randomizer';
 
 const STORAGE_KEY_CONFIG = 'qr_studio_active_config_v1';
 const STORAGE_KEY_HISTORY = 'qr_studio_history_v1';
@@ -58,6 +64,11 @@ export default function App() {
   const [galleryInitialMode, setGalleryInitialMode] = useState<'gallery' | 'save-dialog'>('gallery');
   const [isScanGuideOpen, setIsScanGuideOpen] = useState(false);
   const [scanGuideTopic, setScanGuideTopic] = useState<string | undefined>(undefined);
+  const [isScanTestOpen, setIsScanTestOpen] = useState(false);
+  const [isGuidesOpen, setIsGuidesOpen] = useState(false);
+  const [initialGuideSlug, setInitialGuideSlug] = useState<string | undefined>(undefined);
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+  const [infoModalType, setInfoModalType] = useState<InfoModalType>('privacy');
 
   const handleOpenScanGuide = useCallback((topic?: string) => {
     setScanGuideTopic(topic);
@@ -92,14 +103,17 @@ export default function App() {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Sync theme class to <html>
+  // Sync theme class to <html> and <body>
   useEffect(() => {
     const root = document.documentElement;
+    const body = document.body;
     if (darkMode) {
       root.classList.add('dark');
+      body?.classList.add('dark');
       localStorage.setItem(STORAGE_KEY_THEME, 'dark');
     } else {
       root.classList.remove('dark');
+      body?.classList.remove('dark');
       localStorage.setItem(STORAGE_KEY_THEME, 'light');
     }
   }, [darkMode]);
@@ -155,38 +169,11 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [currentPayload, config]);
 
-  // Surprise Me: Randomize high-quality aesthetic combination
+  // Surprise Me: Randomize high-contrast aesthetic combination
   const handleSurpriseMe = () => {
-    const randomTemplate =
-      PRESET_TEMPLATES[Math.floor(Math.random() * PRESET_TEMPLATES.length)];
-    const randomLogo = QUICK_LOGOS[Math.floor(Math.random() * QUICK_LOGOS.length)];
-
-    const withLogo = Math.random() > 0.4;
-
-    const newConfig: QRConfig = {
-      ...config,
-      ...randomTemplate.config,
-      hasLogo: withLogo,
-      logo: withLogo
-        ? {
-            image: randomLogo.svgDataUri,
-            name: randomLogo.name,
-            size: 0.28,
-            margin: 6,
-            backgroundShape: 'rounded-square',
-            backgroundColor: '#ffffff',
-            opacity: 1,
-            roundCorners: true,
-            offsetX: 0,
-            offsetY: 0,
-            hideBackgroundDots: true,
-          }
-        : config.logo,
-      errorCorrectionLevel: withLogo ? 'H' : 'M',
-    };
-
-    setConfig(newConfig);
-    addToast('Surprise Style Applied!', `Generated with ${randomTemplate.name}`, 'success');
+    const randomized = generateRandomSurpriseStyle(config);
+    setConfig(randomized);
+    addToast('Surprise Style Generated! 🎲', 'Generated unique scannable palette and module styling.', 'success');
   };
 
   // Reset to default
@@ -356,7 +343,11 @@ export default function App() {
   }, [config, currentPayload, addToast]);
 
   return (
-    <div className="min-h-screen bg-neutral-50/50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white transition-colors">
+    <div
+      className={`min-h-screen ${
+        darkMode ? 'dark' : ''
+      } bg-neutral-50/50 dark:bg-neutral-950 text-neutral-900 dark:text-neutral-100 flex flex-col font-sans selection:bg-indigo-500 selection:text-white transition-colors overflow-x-hidden w-full max-w-full`}
+    >
       {/* Top Navigation Bar */}
       <Navbar
         darkMode={darkMode}
@@ -371,10 +362,15 @@ export default function App() {
         isBatchMode={isBatchOpen}
         onToggleBatchMode={() => setIsBatchOpen(true)}
         onOpenScanGuide={() => handleOpenScanGuide()}
+        onOpenScanTest={() => setIsScanTestOpen(true)}
+        onOpenGuides={(slug?: string) => {
+          setInitialGuideSlug(slug);
+          setIsGuidesOpen(true);
+        }}
       />
 
       {/* Main Studio Body */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-6 sm:py-8 overflow-x-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Left Column: Content Inputs & Full Design Studio (7 Cols on desktop) */}
           <div className="lg:col-span-7 space-y-6">
@@ -413,12 +409,82 @@ export default function App() {
               onToggleFavorite={handleToggleCurrentFavorite}
               onToast={addToast}
               onOpenScanGuide={handleOpenScanGuide}
+              onOpenScanTest={() => setIsScanTestOpen(true)}
+              onSurpriseMe={handleSurpriseMe}
             />
           </div>
         </div>
+
+        {/* SEO Landing Sections: How it works, Use Cases, Features, Trust Signals, FAQs */}
+        <LandingSections
+          onSelectContentType={(type: ContentType, sampleData?: any) => {
+            setConfig((prev) => ({
+              ...prev,
+              contentType: type,
+              contentData: sampleData || prev.contentData,
+            }));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          onOpenScanTest={() => setIsScanTestOpen(true)}
+          onSurpriseMe={handleSurpriseMe}
+          onOpenBatch={() => setIsBatchOpen(true)}
+          onSelectTemplate={(templatePartial: Partial<QRConfig>) => {
+            handleApplyTemplate(templatePartial, 'Use Case Preset');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          onOpenGuides={(slug?: string) => {
+            setInitialGuideSlug(slug);
+            setIsGuidesOpen(true);
+          }}
+          onOpenScanAdvisor={(topic?: string) => handleOpenScanGuide(topic)}
+          onOpenInfoModal={(type: InfoModalType) => {
+            setInfoModalType(type);
+            setIsInfoModalOpen(true);
+          }}
+        />
       </main>
 
+      {/* Comprehensive Rich Footer */}
+      <Footer
+        onOpenInfoModal={(type) => {
+          setInfoModalType(type);
+          setIsInfoModalOpen(true);
+        }}
+        onOpenGuides={(slug) => {
+          setInitialGuideSlug(slug);
+          setIsGuidesOpen(true);
+        }}
+        onOpenScanAdvisor={() => handleOpenScanGuide()}
+        onOpenScanTest={() => setIsScanTestOpen(true)}
+        onOpenBatch={() => setIsBatchOpen(true)}
+        onOpenShortcuts={() => setIsShortcutsOpen(true)}
+      />
+
       {/* Modals & Overlays */}
+      <ScanTestModal
+        isOpen={isScanTestOpen}
+        onClose={() => setIsScanTestOpen(false)}
+        currentConfig={config}
+        currentPayload={currentPayload}
+        onToast={addToast}
+      />
+
+      <GuidesModal
+        isOpen={isGuidesOpen}
+        onClose={() => setIsGuidesOpen(false)}
+        initialSlug={initialGuideSlug}
+        onSelectTemplate={(template) => {
+          handleApplyTemplate(template, 'Guide Template');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onOpenScanTest={() => setIsScanTestOpen(true)}
+      />
+
+      <InfoModals
+        isOpen={isInfoModalOpen}
+        modalType={infoModalType}
+        onClose={() => setIsInfoModalOpen(false)}
+      />
       <TemplateGallery
         isOpen={isGalleryOpen}
         onClose={() => setIsGalleryOpen(false)}

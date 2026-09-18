@@ -16,6 +16,7 @@ import {
   FileText,
   Activity,
   CheckCircle2,
+  Scan,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { QRConfig } from '../types';
@@ -28,6 +29,8 @@ interface QRPreviewProps {
   onToggleFavorite: () => void;
   onToast: (title: string, desc?: string, type?: 'success' | 'info' | 'error') => void;
   onOpenScanGuide?: (topic?: string) => void;
+  onOpenScanTest?: () => void;
+  onSurpriseMe?: () => void;
 }
 
 export const QRPreview: React.FC<QRPreviewProps> = ({
@@ -37,6 +40,8 @@ export const QRPreview: React.FC<QRPreviewProps> = ({
   onToggleFavorite,
   onToast,
   onOpenScanGuide,
+  onOpenScanTest,
+  onSurpriseMe,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const qrRef = useRef<HTMLDivElement>(null);
@@ -189,6 +194,32 @@ export const QRPreview: React.FC<QRPreviewProps> = ({
           </div>
 
           <div className="flex items-center gap-1.5">
+            {onOpenScanTest && (
+              <button
+                id="qr-test-scan-header-btn"
+                type="button"
+                onClick={onOpenScanTest}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25 text-xs font-bold transition-all shadow-2xs active:scale-95"
+                title="Test scan active QR code with optical decoder"
+              >
+                <Scan className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span className="hidden sm:inline">Test Scan</span>
+              </button>
+            )}
+
+            {onSurpriseMe && (
+              <button
+                id="qr-surprise-header-btn"
+                type="button"
+                onClick={onSurpriseMe}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-violet-500/10 hover:bg-violet-500/20 text-violet-700 dark:text-violet-300 border border-violet-500/25 text-xs font-bold transition-all shadow-2xs active:scale-95"
+                title="Surprise me with randomized style"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-violet-500" />
+                <span className="hidden sm:inline">Randomize</span>
+              </button>
+            )}
+
             <button
               id="qr-favorite-btn"
               type="button"
@@ -439,6 +470,22 @@ export const QRPreview: React.FC<QRPreviewProps> = ({
             })}
           </div>
         </div>
+
+        {/* Test Scan & Verify Button */}
+        {onOpenScanTest && (
+          <button
+            id="btn-trigger-test-scan"
+            type="button"
+            onClick={onOpenScanTest}
+            className="w-full py-2.5 px-4 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25 font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+          >
+            <Scan className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span>Interactive Optical Test Scan</span>
+            <span className="text-[10px] bg-emerald-500/20 px-2 py-0.5 rounded-full font-mono font-normal">
+              Simulate Camera
+            </span>
+          </button>
+        )}
 
         {/* Primary Luxury Gradient Download Button */}
         <div className="relative group pt-1">

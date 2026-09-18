@@ -11,6 +11,8 @@ import {
   Share2,
   LayoutTemplate,
   ShieldCheck,
+  Scan,
+  BookOpen,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -26,6 +28,8 @@ interface NavbarProps {
   isBatchMode: boolean;
   onToggleBatchMode: () => void;
   onOpenScanGuide?: () => void;
+  onOpenScanTest?: () => void;
+  onOpenGuides?: (guideSlug?: string) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -41,13 +45,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   isBatchMode,
   onToggleBatchMode,
   onOpenScanGuide,
+  onOpenScanTest,
+  onOpenGuides,
 }) => {
   return (
     <header
       id="app-header"
-      className="sticky top-0 z-40 w-full border-b backdrop-blur-xl bg-white/80 dark:bg-[#0b0b0f]/80 border-neutral-200/80 dark:border-white/[0.08] transition-colors shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
+      className="sticky top-0 z-40 w-full max-w-full border-b backdrop-blur-xl bg-white/80 dark:bg-[#0b0b0f]/80 border-neutral-200/80 dark:border-white/[0.08] transition-colors shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-x-clip"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <div className="max-w-7xl w-full mx-auto px-3 sm:px-6 h-16 flex items-center justify-between gap-2 sm:gap-4">
         {/* Brand Logo & Title */}
         <div className="flex items-center gap-3">
           <div className="relative group cursor-pointer">
@@ -73,16 +79,42 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Action Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Test Scan Optical Decoder Button */}
+          {onOpenScanTest && (
+            <button
+              id="nav-test-scan-btn"
+              onClick={onOpenScanTest}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 transition-all border border-emerald-500/20 shadow-2xs hover:shadow-xs active:scale-[0.98]"
+              title="Test scan active QR code with optical decoder"
+            >
+              <Scan className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="hidden sm:inline">Test Scan</span>
+            </button>
+          )}
+
+          {/* Guides & Knowledge Base Button */}
+          {onOpenGuides && (
+            <button
+              id="nav-guides-btn"
+              onClick={() => onOpenGuides()}
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-neutral-100/90 dark:bg-white/[0.05] hover:bg-neutral-200/90 dark:hover:bg-white/[0.08] text-neutral-800 dark:text-neutral-200 transition-all border border-neutral-200/80 dark:border-white/[0.08] shadow-2xs hover:shadow-xs active:scale-[0.98]"
+              title="Read QR code design guides & tutorials"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-blue-500" />
+              <span>Guides</span>
+            </button>
+          )}
+
           {/* Scanability Diagnostic Guide Button */}
           {onOpenScanGuide && (
             <button
               id="nav-scanguide-btn"
               onClick={onOpenScanGuide}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/10 hover:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 transition-all border border-emerald-500/20 shadow-2xs hover:shadow-xs active:scale-[0.98]"
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-violet-500/10 hover:bg-violet-500/15 text-violet-700 dark:text-violet-300 transition-all border border-violet-500/20 shadow-2xs hover:shadow-xs active:scale-[0.98]"
               title="Open Scanability Diagnostic Guide & ISO Rules"
             >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span className="hidden sm:inline">Scan Advisor</span>
+              <ShieldCheck className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
+              <span>Scan Advisor</span>
             </button>
           )}
 

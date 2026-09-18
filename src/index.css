@@ -1,5 +1,28 @@
 @import "tailwindcss";
 
+/* Enable class-based dark mode in Tailwind CSS v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Prevent any horizontal overflow, pulling, or panning across the entire document */
+html,
+body {
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  touch-action: pan-y; /* Only allow vertical scrolling / panning */
+  -webkit-overflow-scrolling: touch;
+}
+
+#root {
+  overflow-x: hidden !important;
+  max-width: 100% !important;
+  width: 100% !important;
+  min-height: 100%;
+}
+
 @layer utilities {
   .perspective-1000 {
     perspective: 1000px;
